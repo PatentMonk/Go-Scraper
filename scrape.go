@@ -26,7 +26,7 @@ type FindResponse struct{
 
   Table string
   PublishedAs string
-  Application string
+  Application bool
 }
 
 type para struct{
@@ -132,24 +132,24 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
     t := strings.Split(src,"thumbnails/")
     if i != (img_len-1) {
       if len(t) > 0 {
-        response.Images = append(response.Images,("\""+t[0]+t[1]+"\","))
+        response.Images = append(response.Images,(t[0]+t[1]))
       } else {
-        response.Images = append(response.Images,("\""+t[0]+"\","))
+        response.Images = append(response.Images,(t[0]))
       }
     } else {
       if len(t) > 0 {
-        response.Images = append(response.Images,("\""+t[0]+t[1]+"\""))
+        response.Images = append(response.Images,(t[0]+t[1]))
       } else {
-        response.Images = append(response.Images,("\""+t[0]+"\""))
+        response.Images = append(response.Images,(t[0]))
       }
     }
   })
 
   if doc.Length() > 0 && doc.Find(".patent-claims-section").Length() > 0 {
     response.Claims, _ = doc.Find(".patent-claims-section").Find(".claims").Html()
-    response.Claims = ",\"claims\"=>\"" + strings.Replace(response.Claims,"\"","'",-1) + "\""
-    response.IndClaims = ",\"ind_claims\"=>" + strconv.Itoa(doc.Find(".claim .claim").Length())
-    response.TotalClaims = ",\"total_claims\"=>" + strconv.Itoa(doc.Find(".claim-dependent").Length() + doc.Find(".claim .claim").Length())
+    response.Claims = strings.Replace(response.Claims,"\"","'",-1)
+    response.IndClaims = strconv.Itoa(doc.Find(".claim .claim").Length())
+    response.TotalClaims = strconv.Itoa(doc.Find(".claim-dependent").Length() + doc.Find(".claim .claim").Length())
   } else {
     response.Claims = ""
     response.IndClaims = "0"
@@ -172,13 +172,12 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
     response.Table = response.Table + "<tr>" + table + "</tr>"
   })
 
-  replace := strings.Replace(response.Table,"\"","'",-1)
-  response.Table = ",\"table\"=>\"" + replace + "\""
+  response.Table = strings.Replace(response.Table,"\"","'",-1)
 
   if strings.Index(doc.Find(".patent-bibdata tr:not(.patent-bibdata-group-spacer):not(.alternate-patent-number):not(.patent-internal-links)").Find("td.single-patent-bibdata").Text(),"Application") > -1 {
-    response.Application = "true"
+    response.Application = true
   } else {
-    response.Application = "false"
+    response.Application = false
   }
 
   js, err := json.Marshal(response)
