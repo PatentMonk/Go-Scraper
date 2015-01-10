@@ -1,1 +1,1 @@
-web: scrape
+web: ./scrape
