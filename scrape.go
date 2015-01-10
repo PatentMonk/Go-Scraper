@@ -42,7 +42,6 @@ type MasterDescription struct{
 }
 
 func ExampleScrape(w http.ResponseWriter, r *http.Request){
-  master := make([]FindResponse, 1)
   response := FindResponse{}
   args := r.FormValue("number")
   doc, _ := goquery.NewDocument("http://google.com/patents/" + args)
@@ -182,8 +181,7 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
     response.Application = "false"
   }
 
-  master[0] = response
-  js, err := json.Marshal(master)
+  js, err := json.Marshal(response)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
