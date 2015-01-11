@@ -52,7 +52,7 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
 
 
       f.Siblings().Each(func(j int, x *goquery.Selection) {
-        if x.Is("p") {
+        if x.Is("p") || x.Is("li") {
           html, _ := x.Html()
           quick_id := fmt.Sprintf("pm-%v",j)
           small_paragraph := para{
