@@ -7,7 +7,7 @@ import (
   "strconv"
   "github.com/PuerkitoBio/goquery"
   "encoding/json"
-  "os"
+  //"os"
 )
 
 type FindResponse struct{
@@ -127,6 +127,7 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
   }
 
   img_len := doc.Find(".patent-thumbnail-image").Length()
+  response.Images = make([]string, doc.Find(".patent-thumbnail-image").Length())
   doc.Find(".patent-thumbnail-image").Each(func(i int, f *goquery.Selection) {
     src, _ := f.Attr("src")
     t := strings.Split(src,"thumbnails/")
@@ -156,7 +157,7 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
     response.TotalClaims = "0"
   }
   published := strings.Split(doc.Find(".patent-bibdata-list-row").First().Find("td").Last().Find(".patent-bibdata-value-list").Text(), ", ")
-  response.PublishedAs = strings.Join(published, "', '")
+  response.PublishedAs = "'" + strings.Join(published, "', '") + "'"
   if len(published) > 2 {
     small_table, _:= doc.Find(".patent-bibdata-list-row").First().Find("td").Last().Find(".patent-bibdata-value-list").Html()
     small_split := strings.Split(small_table, "<a ")
@@ -197,7 +198,8 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
 
 func main(){
   http.HandleFunc("/", ExampleScrape)
-  err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+  //err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+  err := http.ListenAndServe(":3000", nil)
   if err != nil {
     panic(err)
   }
