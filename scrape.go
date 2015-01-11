@@ -7,7 +7,7 @@ import (
   "strconv"
   "github.com/PuerkitoBio/goquery"
   "encoding/json"
-  //"os"
+  "os"
 )
 
 type FindResponse struct{
@@ -198,8 +198,7 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
 
 func main(){
   http.HandleFunc("/", ExampleScrape)
-  //err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
-  err := http.ListenAndServe(":3000", nil)
+  err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
   if err != nil {
     panic(err)
   }
