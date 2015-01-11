@@ -1,1 +1,1 @@
-web: go_scraper
+web: scraper
