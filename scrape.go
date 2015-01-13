@@ -1,7 +1,6 @@
 package main
 
 import (
-  "fmt"
   "strings"
   "net/http"
   "strconv"
@@ -31,7 +30,6 @@ type FindResponse struct{
 
 type para struct{
   Text string
-  Id string
 }
 
 type MasterDescription struct{
@@ -46,18 +44,14 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
   args := r.FormValue("number")
   doc, _ := goquery.NewDocument("http://google.com/patents/" + args)
   if doc.Find("heading").Length() > 0 {
-    response.Description = make([]MasterDescription, doc.Find("heading").Length())
     doc.Find("heading").Each(func(i int, f *goquery.Selection) {
-      paragraphs := make([]para, f.Siblings().Length())
+      paragraphs := make([]para, 0)
 
-
-      f.Siblings().Each(func(j int, x *goquery.Selection) {
-        if x.Is("p") || x.Is("li") {
-          html, _ := x.Html()
-          quick_id := fmt.Sprintf("pm-%v",j)
+      f.NextUntil("heading").Each(func(j int, x *goquery.Selection) {
+        html, _ := x.Html()
+        if html != "" {
           small_paragraph := para{
             Text: strings.Replace(html,"\"","'",-1),
-            Id: quick_id,
           }
           
           paragraphs = append(paragraphs, small_paragraph)
@@ -74,18 +68,16 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
 
       }
       
-      response.Description[i] = descrip
+      response.Description = append(response.Description,descrip)
     })
 
   } else{
     paragraphs := make([]para, 1)
     response.Description = make([]MasterDescription, 1)
     this_text, _ := doc.Find(".patent-description-section").Html()
-    quick_id := "old"
 
     small_paragraph := para{
       Text: strings.Replace(this_text,"\"","'",-1),
-      Id:  quick_id,
     }
     paragraphs = append(paragraphs, small_paragraph)
     descrip := MasterDescription{
@@ -93,8 +85,7 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
       TitleSlug: "description",
       Paragraphs: paragraphs,
     }
-
-    response.Description[0] = descrip
+    response.Description = append(response.Description,descrip)
   }
 
   //Title and number
@@ -126,23 +117,13 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
     response.Classification = ""
   }
 
-  img_len := doc.Find(".patent-thumbnail-image").Length()
-  response.Images = make([]string, doc.Find(".patent-thumbnail-image").Length())
   doc.Find(".patent-thumbnail-image").Each(func(i int, f *goquery.Selection) {
     src, _ := f.Attr("src")
     t := strings.Split(src,"thumbnails/")
-    if i != (img_len-1) {
-      if len(t) > 0 {
-        response.Images = append(response.Images,(t[0]+t[1]))
-      } else {
-        response.Images = append(response.Images,(t[0]))
-      }
+    if len(t) > 0 {
+      response.Images = append(response.Images,(t[0]+t[1]))
     } else {
-      if len(t) > 0 {
-        response.Images = append(response.Images,(t[0]+t[1]))
-      } else {
-        response.Images = append(response.Images,(t[0]))
-      }
+      response.Images = append(response.Images,(t[0]))
     }
   })
 
