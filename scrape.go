@@ -9,6 +9,10 @@ import (
   "os"
 )
 
+type Pongo struct{
+  Pong bool
+}
+
 type FindResponse struct{
   Description     []MasterDescription
   Title string
@@ -172,13 +176,22 @@ func ExampleScrape(w http.ResponseWriter, r *http.Request){
   w.Write(js)
 }
 
-
-
+func Ping(w http.ResponseWriter, r *http.Request){
+  response := Pongo{Pong: true}
+  js, err := json.Marshal(response)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+  w.Header().Set("Content-Type", "application/json")
+  w.Write(js)
+}
 
 
 
 func main(){
   http.HandleFunc("/", ExampleScrape)
+  http.HandleFunc("/ping", Ping)
   err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
   if err != nil {
     panic(err)
