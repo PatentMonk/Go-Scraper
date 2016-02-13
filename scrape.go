@@ -32,6 +32,10 @@ type FindResponse struct{
   Application bool
 }
 
+type ua struct{
+  Text string
+}
+
 type para struct{
   Text string
 }
@@ -46,7 +50,27 @@ type MasterDescription struct{
 func ExampleScrape(w http.ResponseWriter, r *http.Request){
   response := FindResponse{}
   args := r.FormValue("number")
-  doc, _ := goquery.NewDocument("http://google.com/patents/" + args)
+
+
+
+
+  req, err := http.NewRequest("GET", "http://google.com/patents/" + args, nil)
+  if err != nil {
+    return
+  }
+
+  ua := "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36"
+  req.Header.Set("User-Agent", ua)
+  res, err := http.DefaultClient.Do(req)
+  if err != nil {
+    return
+  }
+  defer res.Body.Close()
+
+
+
+
+  doc, _ := goquery.NewDocumentFromResponse(res)
   if doc.Find("heading").Length() > 0 {
     doc.Find("heading").Each(func(i int, f *goquery.Selection) {
       paragraphs := make([]para, 0)
